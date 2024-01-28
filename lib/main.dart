@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tdd_clean_architecture_course/injection_container.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await init();
   runApp(const MyApp());
 }
 
