@@ -17,8 +17,9 @@ Future<void> init() async {
     () => NetworkInfoImpl(Connectivity()),
   );
 
-  locator.registerLazySingletonAsync<SharedPreferences>(
-    () async => await SharedPreferences.getInstance(),
+  var sharedPrefer = await SharedPreferences.getInstance();
+  locator.registerLazySingleton<SharedPreferences>(
+    () => sharedPrefer,
   );
 
   locator.registerLazySingleton<NumberTriviaRemoteDataSource>(

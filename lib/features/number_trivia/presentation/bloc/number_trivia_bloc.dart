@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_tdd_clean_architecture_course/core/error/failuers.dart';
 import 'package:flutter_tdd_clean_architecture_course/core/utils/string_converter.dart';
@@ -29,30 +30,40 @@ class NumberTriviaBloc extends Bloc<NumberTriviaEvent, NumberTriviaState> {
     _getConcreteNumberTrivia = GetConcreteNumberTrivia(_numberTriviaRepository);
     _getTriviaForRandomNumber = GetRandomNumberTrivial(_numberTriviaRepository);
 
-    on<GetTriviaForConcreteNumber>((event, emit) async {
-      var data = await _getConcreteNumberTrivia(
-          number: _stringConverter.stringConverter(event.numberString));
+    on<GetTriviaForConcreteNumber>(
+      (event, emit) async {
+        emit(LoadingNumberTriviaState());
 
-      var dataFold = data.fold(
-          (left) => ErrorNumberTriviaState(
-                message: _errorMessage(left),
-              ),
-          (right) => LoadedNumberTriviaState(trivia: right));
+        var data = await _getConcreteNumberTrivia(
+            number: _stringConverter.stringConverter(event.numberString));
 
-      emit(dataFold);
-    });
+        var dataFold = data.fold(
+            (left) => ErrorNumberTriviaState(
+                  message: _errorMessage(left),
+                ),
+            (right) => LoadedNumberTriviaState(trivia: right));
 
-    on<GetTriviaForRandomNumber>((event, emit) async {
-      var data = await _getTriviaForRandomNumber();
+        emit(dataFold);
+      },
+      transformer: droppable(),
+    );
 
-      var dataFold = data.fold(
-          (left) => ErrorNumberTriviaState(
-                message: _errorMessage(left),
-              ),
-          (right) => LoadedNumberTriviaState(trivia: right));
+    on<GetTriviaForRandomNumber>(
+      (event, emit) async {
+        emit(LoadingNumberTriviaState());
 
-      emit(dataFold);
-    });
+        var data = await _getTriviaForRandomNumber();
+
+        var dataFold = data.fold(
+            (left) => ErrorNumberTriviaState(
+                  message: _errorMessage(left),
+                ),
+            (right) => LoadedNumberTriviaState(trivia: right));
+
+        emit(dataFold);
+      },
+      transformer: droppable(),
+    );
   }
 
   String _errorMessage(Failure failure) {
